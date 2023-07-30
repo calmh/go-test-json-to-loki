@@ -10,7 +10,7 @@ import (
 )
 
 type CLI struct {
-	LokiURL      string   `help:"Loki URL" required:"true" env:"LOKI_URL"`
+	LokiURL      string   `help:"Loki URL" env:"LOKI_URL"`
 	LokiUser     string   `help:"Loki user" env:"LOKI_USER"`
 	LokiPassword string   `help:"Loki password" env:"LOKI_PASSWORD"`
 	Labels       []string `help:"Labels to add to all lines (key=value)" env:"LOKI_LABELS" short:"l"`
@@ -47,7 +47,9 @@ loop:
 			if !ok {
 				break loop
 			}
-			lines = append(lines, tl)
+			if cli.LokiURL != "" {
+				lines = append(lines, tl)
+			}
 			if tl.Output != "" {
 				fmt.Print(tl.Output)
 			}

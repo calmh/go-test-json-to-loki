@@ -39,6 +39,7 @@ func main() {
 	postTimer := time.NewTicker(5 * time.Second)
 
 	var lines []timedLine
+	exitCode := 0
 loop:
 	for {
 		select {
@@ -49,6 +50,10 @@ loop:
 			lines = append(lines, tl)
 			if tl.Output != "" {
 				fmt.Print(tl.Output)
+			}
+			if tl.Action == "fail" {
+				// A test failed; propagate the exit code.
+				exitCode = 1
 			}
 
 		case <-postTimer.C:
@@ -66,4 +71,6 @@ loop:
 			fmt.Fprintf(os.Stderr, "Error: posting to Loki: %v\n", err)
 		}
 	}
+
+	os.Exit(exitCode)
 }

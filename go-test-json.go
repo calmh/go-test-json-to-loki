@@ -11,6 +11,7 @@ import (
 type timedLine struct {
 	Time   time.Time
 	Output string
+	Action string
 	raw    string
 }
 

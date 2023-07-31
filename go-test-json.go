@@ -9,17 +9,16 @@ import (
 )
 
 type timedLine struct {
-	Time   time.Time
-	Output string
-	Action string
-	raw    string
-}
+	// fields from go test -json
+	Time    time.Time
+	Output  string  `json:",omitempty"`
+	Action  string  `json:",omitempty"`
+	Test    string  `json:",omitempty"`
+	Package string  `json:",omitempty"`
+	Elapsed float64 `json:",omitempty"`
 
-func (tl *timedLine) MarshalJSON() ([]byte, error) {
-	return json.Marshal([]string{
-		fmt.Sprintf("%d", tl.Time.UnixNano()),
-		tl.raw,
-	})
+	// extra fields
+	Run string
 }
 
 func readStdinInto(ch chan<- timedLine) {
@@ -31,7 +30,6 @@ func readStdinInto(ch chan<- timedLine) {
 		}
 
 		var tl timedLine
-		tl.raw = line
 		if err := json.Unmarshal([]byte(line), &tl); err != nil {
 			fmt.Fprintf(os.Stderr, "Error unmarshalling JSON: %v\n", err)
 			continue

@@ -30,6 +30,7 @@ func main() {
 		labels[k] = v
 	}
 
+	run := fmt.Sprintf("%x", time.Now().UnixNano())
 	in := make(chan timedLine)
 	go func() {
 		readStdinInto(in)
@@ -47,6 +48,7 @@ loop:
 			if !ok {
 				break loop
 			}
+			tl.Run = run
 			if cli.LokiURL != "" {
 				lines = append(lines, tl)
 			}
@@ -67,6 +69,12 @@ loop:
 			}
 		}
 	}
+
+	finalAction := "final-pass"
+	if exitCode != 0 {
+		finalAction = "final-fail"
+	}
+	lines = append(lines, timedLine{Time: time.Now(), Action: finalAction, Run: run})
 
 	if len(lines) > 0 {
 		if err := postLines(labels, lines, &cli); err != nil {

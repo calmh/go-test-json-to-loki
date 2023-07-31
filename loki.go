@@ -15,15 +15,32 @@ type request struct {
 
 type stream struct {
 	Labels map[string]string `json:"stream"`
-	Values []timedLine       `json:"values"`
+	Values []lokiStreamLine  `json:"values"`
+}
+
+type lokiStreamLine timedLine
+
+func (tl *lokiStreamLine) MarshalJSON() ([]byte, error) {
+	bs, err := json.Marshal(timedLine(*tl))
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal([]string{
+		fmt.Sprintf("%d", tl.Time.UnixNano()),
+		string(bs),
+	})
 }
 
 func postLines(labels map[string]string, lines []timedLine, cli *CLI) error {
+	lokiLines := make([]lokiStreamLine, len(lines))
+	for i, tl := range lines {
+		lokiLines[i] = lokiStreamLine(tl)
+	}
 	re := request{
 		Streams: []stream{
 			{
 				Labels: labels,
-				Values: lines,
+				Values: lokiLines,
 			},
 		},
 	}

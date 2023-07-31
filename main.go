@@ -20,6 +20,8 @@ func main() {
 	var cli CLI
 	kong.Parse(&cli)
 
+	start := time.Now()
+
 	labels := make(map[string]string)
 	for _, l := range cli.Labels {
 		k, v, ok := strings.Cut(l, "=")
@@ -74,7 +76,12 @@ loop:
 	if exitCode != 0 {
 		finalAction = "final-fail"
 	}
-	lines = append(lines, timedLine{Time: time.Now(), Action: finalAction, Run: run})
+	lines = append(lines, timedLine{
+		Time:    time.Now(),
+		Action:  finalAction,
+		Elapsed: time.Since(start).Seconds(),
+		Run:     run,
+	})
 
 	if len(lines) > 0 {
 		if err := postLines(labels, lines, &cli); err != nil {

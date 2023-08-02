@@ -72,18 +72,18 @@ loop:
 		}
 	}
 
-	finalAction := "final-pass"
-	if exitCode != 0 {
-		finalAction = "final-fail"
-	}
-	lines = append(lines, timedLine{
-		Time:    time.Now(),
-		Action:  finalAction,
-		Elapsed: time.Since(start).Seconds(),
-		Run:     run,
-	})
+	if cli.LokiURL != "" {
+		finalAction := "final-pass"
+		if exitCode != 0 {
+			finalAction = "final-fail"
+		}
+		lines = append(lines, timedLine{
+			Time:    time.Now(),
+			Action:  finalAction,
+			Elapsed: time.Since(start).Round(time.Millisecond).Seconds(),
+			Run:     run,
+		})
 
-	if len(lines) > 0 {
 		if err := postLines(labels, lines, &cli); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: posting to Loki: %v\n", err)
 		}
